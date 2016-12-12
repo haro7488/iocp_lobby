@@ -1,0 +1,16 @@
+//////////////////////////////////////////////////////////////////////
+// GameProc.h
+// GM_ 관련 게임 메세지를 처리.
+//////////////////////////////////////////////////////////////////////
+
+#ifndef _GAMEPROC_H_
+#define _GAMEPROC_H_
+
+#include "global.h"
+
+class CUser;
+
+extern void OnReceivePacket(DWORD msg, DWORD wParam, DWORD lParam, const char *pPacket);
+
+
+#endif
