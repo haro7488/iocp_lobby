@@ -64,11 +64,11 @@ void CRoom::OnDeleteAddUser(DWORD user_id, CUser *pUser)	// 유저 나감
 
 }
 //--------------------------------- 패킷 송신 관련 ---------------------------------//
-BOOL CRoom::OnSendRoomInfo()
+BOOL CRoom::OnSendAllUserRoomInfo()
 {
-    ST_ROOM_INFO *pRoomInfo = (ST_ROOM_INFO *)m_SendBuff;
-    pRoomInfo->PktID = PKT_ROOMINFO;
-    pRoomInfo->PktSize = sizeof(ST_ROOM_INFO);
+    ST_ROOM_INFORES *pRoomInfo = (ST_ROOM_INFORES *)m_SendBuff;
+    pRoomInfo->PktID = PKT_ROOMINFORES;
+    pRoomInfo->PktSize = sizeof(ST_ROOM_INFORES);
     pRoomInfo->max = m_maxUser;
     pRoomInfo->cur = m_curUser;
     pRoomInfo->index = m_iRoom;
@@ -80,6 +80,50 @@ BOOL CRoom::OnSendRoomInfo()
 
     return TRUE;
 }
+
+BOOL CRoom::OnSendRoomInfo(CUser * pUser)
+{
+	ST_ROOM_INFORES *pRoomInfo = (ST_ROOM_INFORES *)m_SendBuff;
+	pRoomInfo->PktID = PKT_ROOMINFORES;
+	pRoomInfo->PktSize = sizeof(ST_ROOM_INFORES);
+	pRoomInfo->max = m_maxUser;
+	pRoomInfo->cur = m_curUser;
+	pRoomInfo->index = m_iRoom;
+	strcpy(pRoomInfo->title, m_strRoomName.c_str());
+
+	m_WSABUF.len = pRoomInfo->PktSize;
+
+	pUser->OnSendPacket(&m_WSABUF);
+
+	return TRUE;
+}
+
+BOOL CRoom::OnSendInRoomInfo(CUser * pUser)
+{
+	ST_ROOM_INFORES *pRoomInfo = (ST_ROOM_INFORES *)m_SendBuff;
+	pRoomInfo->PktID = PKT_ROOMINFORES;
+	pRoomInfo->PktSize = sizeof(ST_ROOM_INFORES);
+	pRoomInfo->max = m_maxUser;
+	pRoomInfo->cur = m_curUser;
+	pRoomInfo->index = m_iRoom;
+	strcpy(pRoomInfo->title, m_strRoomName.c_str());
+
+	m_WSABUF.len = pRoomInfo->PktSize;
+
+	pUser->OnSendPacket(&m_WSABUF);
+
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* user;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		user = (iterator_user->second);
+		pUser->OnSendUserName(user);
+	}
+
+	return TRUE;
+}
+
+
 
 BOOL CRoom::OnSendPacket()
 {

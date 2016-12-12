@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "UserManager.h"
+#include "Room.h"
 
 
 #define LIST_READY_USER_SIZE  1000
@@ -363,10 +364,37 @@ void CUserManager::OnSendLobbyUserInfoToMe(CUser *pMe)
 
         if (pMe->GetUserID() == pUser->GetUserID()) continue;
 
+		if (pUser->GetRoom() != nullptr) continue;
+
         pUser->OnSendUserName(pMe);
     }
 
     UnLock();
+}
+
+void CUserManager::OnSendLobbyRoomInfoToMe(CUser * pMe)
+{
+	if (!pMe) return;
+
+	CUser *pUser;
+
+	Lock();
+
+	MAP_USERID::iterator  iterator_user = m_mapUserID.begin();
+
+	for (; iterator_user != m_mapUserID.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+
+		if (pMe->GetUserID() == pUser->GetUserID()) continue;
+
+		CRoom* room = pUser->GetRoom();
+		if (!room) continue;
+		//pUser->OnSendUserName(pMe);
+		room->OnSendRoomInfo(pMe);
+	}
+
+	UnLock();
 }
 
 

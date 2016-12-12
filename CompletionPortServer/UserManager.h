@@ -61,6 +61,7 @@ public:
 	void OnSendSeeAllUserInfoToMe(CUser *pMe, int me_world, int me_map);// 다른 사람 정보를 나한테 보낸다.
 
     void OnSendLobbyUserInfoToMe(CUser *pMe);// 다른 사람 정보를 나한테 보낸다.lobby
+	void OnSendLobbyRoomInfoToMe(CUser *pMe);// 다른 사람이 만든 방 정보를 나한테 보낸다.
 
 	//경이추가/////////////////////////////////////////////////////
 	void OnSendNotify(char *notify);	//전체 공지 메시지 전송

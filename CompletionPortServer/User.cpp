@@ -59,7 +59,7 @@ BOOL CUser::InitUser(DWORD user_id, SOCKET client_socket, SOCKADDR_IN &clientadd
 
 	m_iUserID = user_id;
 	m_strUserID[0] = '\0';
-    m_myRoom = NULL;
+    m_myRoom = nullptr;
 
 
 	if( !RegisterCompletionPort(m_hSocket, (DWORD)this) )
@@ -162,6 +162,7 @@ void CUser::OnPacketProcess(void *pPacket)
         case PKT_LOBBYINFOREQ:
         {
             g_pUserMgr->OnSendLobbyUserInfoToMe(this);
+			g_pUserMgr->OnSendLobbyRoomInfoToMe(this);
         }
         break;
         case PKT_CREATEROOM:
@@ -172,13 +173,17 @@ void CUser::OnPacketProcess(void *pPacket)
             int ret = m_myRoom->OnAddUser(m_iUserID, this);
             if (ret != 0)
             {
-
                 return;
             }
 
-            m_myRoom->OnSendRoomInfo();
+            m_myRoom->OnSendAllUserRoomInfo();
         }
         break;
+		case PKT_ROOMINFOREQ:
+		{
+			m_myRoom->OnSendInRoomInfo(this);
+		}
+		break;
 	}
 }
 

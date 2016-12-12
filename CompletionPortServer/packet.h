@@ -51,14 +51,31 @@ typedef struct _tgCreateRoom : PACKETHEADER
 {
 	char title[50];
 } ST_ROOM_CREATE;
-#define PKT_ROOMINFO		0x00220012
-typedef struct _tgRoomInfo : PACKETHEADER
+
+#define PKT_ROOMINFOREQ		0x00220012
+typedef struct _tgRoomInfoReq : PACKETHEADER
+{
+} ST_ROOMINFOREQ;
+
+#define PKT_ROOMINFORES		0x00220013
+typedef struct _tgRoomInfoRes : PACKETHEADER
 {
 	DWORD index;
 	unsigned char max;
 	unsigned char cur;
 	char title[50];
-}ST_ROOM_INFO;
+}ST_ROOM_INFORES;
+
+#define PKT_USERENTERROOM	0x00220014
+typedef struct _tgUserEnterRoom : PACKETHEADER
+{
+} ST_USERENTERROOM;
+
+#define PKT_USEREXITROOM	0x00220015
+typedef struct _tgUserExitRoom : PACKETHEADER
+{
+} ST_USEREXITROOM;
+
 #pragma pack(pop)
 
 #endif

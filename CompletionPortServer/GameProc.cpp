@@ -52,20 +52,20 @@ void OnReceivePacket(DWORD msg, DWORD wParam, DWORD lParam, const char *pPacket)
 	switch (msg)									
 	{
 		case GM_DISCONNECTUSER:
-			{
-				
-			}
-			 break;
+		{
+			printf("DISCONNECT\n");
+		}
+		break;
 		case GM_PKTRECEIVE:
-			{
-				CUser *pUser = (CUser *)lParam;
+		{
+			CUser *pUser = (CUser *)lParam;
 
-				if( (pUser == NULL) || (pPacket == NULL) )
-					break;				
+			if( (pUser == NULL) || (pPacket == NULL) )
+				break;				
 
-				pUser->OnPacketProcess((void *)pPacket);
-			}
-			 break;
+			pUser->OnPacketProcess((void *)pPacket);
+		}
+		break;
 		case GM_GAMETIMER:
 			{
 

@@ -186,7 +186,7 @@ void CRoomManager::OnSendAllUser()
         pRoom = (iterator_room->second);
         if (pRoom == NULL) continue;
 
-        pRoom->OnSendRoomInfo();
+        pRoom->OnSendAllUserRoomInfo();
     }
 
     UnLock();

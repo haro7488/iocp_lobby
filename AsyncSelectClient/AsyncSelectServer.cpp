@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include "CirQueue.h"
+#include <string>
 
 #define BUFSIZE 512
 #define WM_SOCKET (WM_USER+1)
@@ -14,6 +15,8 @@ SOCKET g_sock;
 // 윈도우 메시지 처리 함수
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void ProcessSocketMessage(HWND, UINT, WPARAM, LPARAM);
+
+void EnterIsContinue();
 // 오류 출력 함수
 void err_quit(char *msg);
 void err_display(char *msg);
@@ -21,15 +24,35 @@ void err_display(int errcode);
 
 enum eGameState
 {
-    stateNone,
-    stateLogin,
-    stateLoginWait,
-    stateLobby,
+	stateNone,
+	stateLogin,
+	stateLoginWait,
+	stateLobby,
+	stateWaitEnterRoom,
+	stateWaitExitRoom,
+	stateRoom,
+	stateEnterGame,
 	stateGame
 };
 
 eGameState gameState = stateNone;
 ST_LOGIN login;
+
+using std::string;
+
+class CUser
+{
+public:
+	string name;
+};
+
+class CRoom
+{
+public:
+
+};
+
+CUser g_User;
 
 DWORD WINAPI Terminal(LPVOID arg)
 {
@@ -39,6 +62,7 @@ DWORD WINAPI Terminal(LPVOID arg)
 		{
 		case stateLogin:
 		{
+			system("cls");
 			gameState = stateLoginWait;
 			printf(" - 로그인 - \n");
 			printf("ID : ");
@@ -54,25 +78,54 @@ DWORD WINAPI Terminal(LPVOID arg)
 
 			}
 		}
-			break;
+		break;
+		case stateLobby:
+		{
+			printf(" - 로비 - \n");
+			printf("ME : %s\n\n", g_User.name.c_str());
+			printf("대기자 / 방 목록 = \n");
+			ST_LOBBYINFOREQ  lobbyReq;
+			lobbyReq.PktID = PKT_LOBBYINFOREQ;
+			lobbyReq.PktSize = sizeof(ST_LOBBYINFOREQ);
+			send(g_sock, (char *)&lobbyReq, lobbyReq.PktSize, 0);
+			Sleep(500);
+		}
+		break;
+		case stateRoom:
+		{
+			printf(" - 룸 - \n");
+			printf("ME : %s\n\n", g_User.name.c_str());
+			printf("방정보 = \n");
+			ST_ROOMINFOREQ roomReq;
+			roomReq.PktID = PKT_ROOMINFOREQ;
+			roomReq.PktSize = sizeof(ST_ROOMINFOREQ);
+			send(g_sock, (char*)&roomReq, roomReq.PktSize, 0);
+
+			Sleep(500);
+		}
+		break;
 		case stateGame:
 		{
 			printf("게임 플레이 중입니다.\n");
 			Sleep(1000);
 		}
-			break;
+		break;
 		default:
 			break;
 		}
 		//getch();
 
+		if (gameState == stateLogin || gameState == stateLoginWait || gameState == stateWaitEnterRoom)
+			continue;
+
         if (_kbhit())
         {
             printf("----------------------------\n");
-            printf("1. Create room\n");
-            printf("2. Exit room\n");
-            printf("3. Ready\n");
-            printf("4. Play\n");
+            printf("1. Create Room\n");
+			printf("2. Enter Room\n");
+            printf("3. Exit Room\n");
+            printf("4. Ready\n");
+            printf("5. Play\n");
             printf("----------------------------\n");
             printf("command : ");
 
@@ -81,20 +134,57 @@ DWORD WINAPI Terminal(LPVOID arg)
 
             switch (command)
             {
-            case 1:
-                {
-                      printf("room name : ");
+            case 1: // Create Room
+			{
+				if (gameState != stateLobby)
+					break;
+		
+                printf("room name : ");
 
-                      ST_ROOM_CREATE room;
-                      room.PktID = PKT_CREATEROOM;
-                      room.PktSize = sizeof(ST_ROOM_CREATE);
-                      scanf("%s", room.title);
+                ST_ROOM_CREATE room;
+                room.PktID = PKT_CREATEROOM;
+                room.PktSize = sizeof(ST_ROOM_CREATE);
+                scanf("%s", room.title);
 
-                      send(g_sock, (char *)&room, room.PktSize, 0);
-                }
-                break;
+                send(g_sock, (char *)&room, room.PktSize, 0);
+				gameState = stateWaitEnterRoom;
+            }
+            break;
+			case 2: // Enter Room
+			{
+				if (gameState != stateLobby)
+					break;
+
+				gameState = stateWaitEnterRoom;
+			}
+			break;
+			case 3: // Exit Room
+			{
+				if (gameState != stateRoom)
+					break;
+
+				gameState = stateWaitExitRoom;
+			}
+			break;
+			case 4: // Ready
+			{
+				if (gameState != stateRoom)
+					break;
+
+			}
+			break;
+			case 5: // Play
+			{
+				if (gameState != stateRoom)
+					break;
+
+				gameState = stateEnterGame;
+			}
+			break;
             }
         }
+
+		system("cls");
 	}
 }
 
@@ -226,44 +316,55 @@ void PacketProcess(PACKETHEADER *pHeader, HWND hWnd)
 			{
             case loginSuccess:
             {
+				gameState = stateLoginWait;
                 printf("로그인 성공\n");
-                gameState = stateLoginWait;
+				g_User.name = login.name;
 
                 ST_LOBBYINFOREQ  lobbyReq;
                 lobbyReq.PktID = PKT_LOBBYINFOREQ;
                 lobbyReq.PktSize = sizeof(ST_LOBBYINFOREQ);
                 send(g_sock, (char *)&lobbyReq, lobbyReq.PktSize, 0);
+
+				EnterIsContinue();
+				gameState = stateLobby;
             }
 				break;
 			case loginFailWithNoUser:
+				gameState = stateLoginWait;
 				printf("로그인 실패 - 유저가 등록되지 않았습니다.\n");
+				EnterIsContinue();
 				gameState = stateLogin;
 				break;
 			case loginFailWithWorngPassward:
+				gameState = stateLoginWait;
 				printf("로그인 실패 - 패스워드가 맞지 않습니다.\n");
+				EnterIsContinue();
 				gameState = stateLogin;
 				break;
             case loginFailWithExistUser:
-                printf("로그인 실패 - 이미 접속한 유저입니다.\n");
-                gameState = stateLogin;
+				gameState = stateLoginWait;
+				printf("로그인 실패 - 이미 접속한 유저입니다.\n");
+				EnterIsContinue();
+				gameState = stateLogin;
                 break;
 			default:
+				gameState = stateLoginWait;
 				printf("문제가 있어\n");
+				EnterIsContinue();
+				gameState = stateLogin;
 				break;
 			}
 		}
 		break;
         case PKT_LOBBYINFORES:
         {
-           gameState = stateLobby;
-
            ST_LOBBYINFORES *pName = (ST_LOBBYINFORES *)pHeader;
            printf("USER : %s\n", pName->name);
         }
          break;
-        case PKT_ROOMINFO:
+        case PKT_ROOMINFORES:
         {
-           ST_ROOM_INFO *pRoomInfo = (ST_ROOM_INFO *)pHeader;
+           ST_ROOM_INFORES *pRoomInfo = (ST_ROOM_INFORES *)pHeader;
            printf("room : %d, %d/%d, title : %s\n", 
                pRoomInfo->index, pRoomInfo->cur, pRoomInfo->max, pRoomInfo->title);
         }
@@ -323,6 +424,13 @@ void ProcessSocketMessage(HWND hWnd, UINT uMsg,
 		closesocket(wParam);
 		break;
 	}
+}
+
+void EnterIsContinue()
+{
+	printf("계속 하려면 Enter\n");
+	fflush(stdin);
+	getch();
 }
 
 

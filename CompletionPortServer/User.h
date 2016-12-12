@@ -69,6 +69,8 @@ public:
 	char  *GetUserStringID() { return m_strUserID; }
     void SetUserStringID(std::string id);
 	
+	CRoom* GetRoom() { return m_myRoom; }
+
 	void OnInitUserSocket();
 	void OnDisconnectSocket();
 	void CloseUserSocket(BOOL isPost = FALSE);

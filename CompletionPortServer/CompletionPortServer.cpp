@@ -152,6 +152,8 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			{
 				err_display("WSAGetOverlappedResult()");
 			}
+
+			g_pUserMgr->OnDeleteUser(pUser->GetUserID(), pUser);
 			pUser->CloseUserSocket();
 			printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n", 
 				inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
@@ -162,13 +164,17 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 		if (ptr->io_type == IO_RECV) //recv
 		{
 			if (pUser->OnSendGamePacket(cbTransferred) == FALSE)
+			{
+				g_pUserMgr->OnDeleteUser(pUser->GetUserID(), pUser);
 				pUser->CloseUserSocket();
+			}
 		}
 		else if (ptr->io_type == IO_SEND) //send
 		{
 		}
 		else
 		{
+			g_pUserMgr->OnDeleteUser(pUser->GetUserID(), pUser);
 			pUser->CloseUserSocket();
 		}
 	}
