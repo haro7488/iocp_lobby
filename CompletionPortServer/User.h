@@ -89,6 +89,14 @@ public:
 	//--------------------------------- 패킷 송신 관련 ---------------------------------//
 	BOOL   OnSendPacket(); //자신의 정보를 한테 보내는 패킷...
 	BOOL   OnSendPacket(WSABUF *pWsaBuff); // 다른 정보를 나한테 보낸다.
+	BOOL OnSendStartGame();
+	BOOL OnSendEndGame();
+
+	BOOL OnSendGamePlayMove(POSITIONINFO* posInfo);
+	BOOL OnSendGamePlayShoot(POSITIONINFO* posInfo);
+	BOOL OnSendGamePlayBoom(POSITIONINFO* posInfo);
+	BOOL OnSendGamePlayEnemySuperGuard();
+	BOOL OnSendGamePlayRestart();
 
     void OnSendUserName(CUser *pUser);
 
@@ -96,7 +104,6 @@ public:
 	inline BOOL OnSendGamePacket(int recv_byte);
 
 	void OnPacketProcess(void *pPacket); //message thread 에서 호출한다.										
-
 
 
 };

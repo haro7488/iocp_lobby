@@ -120,6 +120,41 @@ typedef struct _tgUserExitRoomRes : PACKETHEADER
 {
 } ST_EXIT_ROOM_RES;
 
+#define PKT_STARTGAMEREQ		0x00440010
+typedef struct _tgStartGameReq : PACKETHEADER
+{
+} ST_START_GAME_REQ;
+
+#define PKT_STARTGAMERES		0x00440011
+typedef struct _tgStartGameRes : PACKETHEADER
+{
+} ST_START_GAME_RES;
+
+#define PKT_ENDGAMEREQ		0x00440012
+typedef struct _tgEndGameReq : PACKETHEADER
+{
+} ST_END_GAME_REQ;
+
+#define PKT_ENDGAMERES		0x00440013
+typedef struct _tgEndGameRes : PACKETHEADER
+{
+} ST_END_GAME_RES;
+
+
+///
+#define PKT_ENEMYSUPERGUARD	0x00ff0000
+#define PKT_RESTART			0x00ff1111
+
+#define PKT_MOVE			0x00ff0011
+#define PKT_SHOOT			0x00ff0022
+#define PKT_BOOM			0x00ff0023
+#define PKT_COLLISION		0x00ff0033
+typedef struct _tgPositionInfo : PACKETHEADER
+{
+	int x;
+	int y;
+}POSITIONINFO;
+
 #pragma pack(pop)
 
 #endif

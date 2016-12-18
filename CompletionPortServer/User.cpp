@@ -88,6 +88,8 @@ void CUser::QuitRoom()
 	if (m_myRoom == nullptr)
 		return;
 
+	m_myRoom->OnSendEndGame();
+
 	int ret = strcmp(m_myRoom->GetRoomMasterName().c_str(), m_strUserID);
 	if (ret == 0)
 	{
@@ -97,7 +99,6 @@ void CUser::QuitRoom()
 	}
 	else
 		m_myRoom->OnDeleteAddUser(m_iUserID, this);
-
 	ST_EXIT_ROOM_RES *pExitRes = (ST_EXIT_ROOM_RES*)m_SendBuff;
 	pExitRes->PktID = PKT_EXITROOMRES;
 	pExitRes->PktSize = sizeof(ST_EXIT_ROOM_RES);
@@ -239,6 +240,49 @@ void CUser::OnPacketProcess(void *pPacket)
 				m_myRoom->OnSendInRoomInfo(this);
 		}
 		break;
+		case PKT_STARTGAMEREQ:
+		{
+			if (m_myRoom->GetCurUserCnt() == 2)
+			{
+				m_myRoom->OnSendStartGame();
+			}
+		}
+		break;
+		
+		////GamePlay Process
+		case PKT_MOVE:
+		{
+			//POSITIONINFO* posInfo = (POSITIONINFO*)pHeader;
+			//player->SetPosition(posInfo->x, posInfo->y);
+			m_myRoom->OnSendGamePlayMove(this, (POSITIONINFO*)pPacket);
+		}
+		break;
+		case PKT_SHOOT:
+		{
+			//POSITIONINFO* posInfo = (POSITIONINFO*)pHeader;
+			//player->AddBullet(posInfo->x, posInfo->y);
+			m_myRoom->OnSendGamePlayShoot(this, (POSITIONINFO*)pPacket);
+		}
+		break;
+		case PKT_BOOM:
+		{
+			//POSITIONINFO* posInfo = (POSITIONINFO*)pHeader;
+			//player->AddBoom(posInfo->x, posInfo->y);
+			m_myRoom->OnSendGamePlayBoom(this, (POSITIONINFO*)pPacket);
+		}
+		break;
+		case PKT_ENEMYSUPERGUARD:
+		{
+			//player->BeginSuperGuard();
+			m_myRoom->OnSendGamePlayEnemySuperGuard(this);
+		}
+		break;
+		case PKT_RESTART:
+		{
+			//Init();
+		}
+		break;
+
 	}
 }
 
@@ -304,6 +348,71 @@ BOOL CUser::OnSendPacket(WSABUF *pWsaBuff)
 		}	
 	}
 
+	return TRUE;
+}
+
+BOOL CUser::OnSendStartGame()
+{
+	ST_START_GAME_RES *pStartGameRes = (ST_START_GAME_RES*)m_SendBuff;
+	pStartGameRes->PktID = PKT_STARTGAMERES;
+	pStartGameRes->PktSize = sizeof(ST_START_GAME_RES);
+	OnSendPacket();
+	return TRUE;
+}
+
+BOOL CUser::OnSendEndGame()
+{
+	ST_END_GAME_RES *pEndGameRes = (ST_END_GAME_RES*)m_SendBuff;
+	pEndGameRes->PktID = PKT_ENDGAMERES;
+	pEndGameRes->PktSize = sizeof(ST_END_GAME_RES);
+	OnSendPacket();
+	return TRUE;
+}
+
+BOOL CUser::OnSendGamePlayMove(POSITIONINFO* posInfo)
+{
+	POSITIONINFO* pMove = (POSITIONINFO*)m_SendBuff;
+	pMove->PktID = PKT_MOVE;
+	pMove->PktSize = sizeof(pMove);
+	pMove->x = posInfo->x;
+	pMove->y = posInfo->y;
+	OnSendPacket();
+	return TRUE;
+}
+
+BOOL CUser::OnSendGamePlayShoot(POSITIONINFO* posInfo)
+{
+	POSITIONINFO* pShot = (POSITIONINFO*)m_SendBuff;
+	pShot->PktID = PKT_SHOOT;
+	pShot->PktSize = sizeof(pShot);
+	pShot->x = posInfo->x;
+	pShot->y = posInfo->y;
+	OnSendPacket();
+	return TRUE;
+}
+
+BOOL CUser::OnSendGamePlayBoom(POSITIONINFO* posInfo)
+{
+	POSITIONINFO* pBoom = (POSITIONINFO*)m_SendBuff;
+	pBoom->PktID = PKT_BOOM;
+	pBoom->PktSize = sizeof(pBoom);
+	pBoom->x = posInfo->x;
+	pBoom->y = posInfo->y;
+	OnSendPacket();
+	return TRUE;
+}
+
+BOOL CUser::OnSendGamePlayEnemySuperGuard()
+{
+	PACKETHEADER* pSuperGuard = (PACKETHEADER*)m_SendBuff;
+	pSuperGuard->PktID = PKT_ENEMYSUPERGUARD;
+	pSuperGuard->PktSize = sizeof(pSuperGuard);
+	OnSendPacket();
+	return TRUE;
+}
+
+BOOL CUser::OnSendGamePlayRestart()
+{
 	return TRUE;
 }
 

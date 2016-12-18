@@ -151,3 +151,110 @@ BOOL CRoom::OnSendPacket(WSABUF *pWsaBuff)
 	
 	return TRUE;
 }
+
+BOOL CRoom::OnSendStartGame()
+{
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* pUser;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+		pUser->OnSendStartGame();
+	}
+
+	return TRUE;
+}
+
+BOOL CRoom::OnSendEndGame()
+{
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* pUser = nullptr;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+		if (pUser != nullptr)
+			pUser->OnSendEndGame();
+	}
+
+	return TRUE;
+}
+
+BOOL CRoom::OnSendGamePlayMove(CUser * sender, POSITIONINFO* posInfo)
+{
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* pUser = nullptr;
+	CUser* pEnemy = nullptr;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+		if (sender->GetUserID() != pUser->GetUserID())
+			pEnemy = pUser;
+	}
+	pEnemy->OnSendGamePlayMove(posInfo);
+
+	return TRUE;
+}
+
+BOOL CRoom::OnSendGamePlayShoot(CUser * sender, POSITIONINFO* posInfo)
+{
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* pUser = nullptr;
+	CUser* pEnemy = nullptr;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+		if (sender->GetUserID() != pUser->GetUserID())
+			pEnemy = pUser;
+	}
+	pEnemy->OnSendGamePlayShoot(posInfo);
+
+	return TRUE;
+}
+
+BOOL CRoom::OnSendGamePlayBoom(CUser * sender, POSITIONINFO* posInfo)
+{
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* pUser = nullptr;
+	CUser* pEnemy = nullptr;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+		if (sender->GetUserID() != pUser->GetUserID())
+			pEnemy = pUser;
+	}
+	pEnemy->OnSendGamePlayBoom(posInfo);
+
+	return TRUE;
+}
+
+BOOL CRoom::OnSendGamePlayEnemySuperGuard(CUser * sender)
+{
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* pUser = nullptr;
+	CUser* pEnemy = nullptr;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+		if (sender->GetUserID() != pUser->GetUserID())
+			pEnemy = pUser;
+	}
+	pEnemy->OnSendGamePlayEnemySuperGuard();
+
+	return TRUE;
+}
+
+BOOL CRoom::OnSendGamePlayRestart(CUser * sender)
+{
+	MAP_USER::iterator  iterator_user = m_mapUser.begin();
+	CUser* pUser = nullptr;
+	CUser* pEnemy = nullptr;
+	for (; iterator_user != m_mapUser.end(); iterator_user++)
+	{
+		pUser = (iterator_user->second);
+		if (sender->GetUserID() != pUser->GetUserID())
+			pEnemy = pUser;
+	}
+	pEnemy->OnSendGamePlayRestart();
+
+	return TRUE;
+}

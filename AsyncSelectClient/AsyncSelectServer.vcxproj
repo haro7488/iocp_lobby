@@ -122,10 +122,15 @@
   <ItemGroup>
     <ClCompile Include="AsyncSelectServer.cpp" />
     <ClCompile Include="CirQueue.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="SubPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CirQueue.h" />
+    <ClInclude Include="myHeader.h" />
     <ClInclude Include="packet.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="SubPlayer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
