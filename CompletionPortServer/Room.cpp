@@ -26,14 +26,26 @@ CUser *CRoom::FindUser(DWORD user_id)
 
 	return NULL;
 }
+void CRoom::QuitAllUser()
+{
+	MAP_USER::iterator iterator_user = m_mapUser.begin();
+	CUser* user;
+	for (; iterator_user != m_mapUser.end(); )
+	{
+
+		user = (iterator_user->second);
+		user->QuitRoom();
+		iterator_user = m_mapUser.begin();
+	}
+}
 eEnterRoomResult CRoom::OnAddUser(DWORD user_id, CUser *pUser)		// 방에 유저 들어옴
 {
     if (m_curUser >= m_maxUser)
-        return EnterRoomFailWithFull;
+        return EnterRoomFailByFull;
 
 	if (FindUser(user_id))
 	{
-		return EnterRoomFailWithExistUser;
+		return EnterRoomFailByExistUser;
 	}
 
     m_curUser++;
@@ -46,14 +58,13 @@ void CRoom::OnDeleteAddUser(DWORD user_id, CUser *pUser)	// 유저 나감
 {
 	if (pUser == NULL) return;
 
-
+	m_curUser--;
 
 	MAP_USER::iterator iterator_user = m_mapUser.find(user_id);
 
 	if (iterator_user != m_mapUser.end())
 	{
 		m_mapUser.erase(iterator_user);
-
 	}
 #ifdef _DEBUG
 	else

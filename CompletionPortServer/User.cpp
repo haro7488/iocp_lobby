@@ -83,6 +83,29 @@ void CUser::ReleaseUser()
 
 }
 
+void CUser::QuitRoom()
+{
+	if (m_myRoom == nullptr)
+		return;
+
+	int ret = strcmp(m_myRoom->GetRoomMasterName().c_str(), m_strUserID);
+	if (ret == 0)
+	{
+		m_myRoom->OnDeleteAddUser(m_iUserID, this);
+		m_myRoom->QuitAllUser();
+		g_pRoomMgr->OnDeleteRoom(m_myRoom->GetRoomNumber(), m_myRoom);		
+	}
+	else
+		m_myRoom->OnDeleteAddUser(m_iUserID, this);
+
+	ST_EXIT_ROOM_RES *pExitRes = (ST_EXIT_ROOM_RES*)m_SendBuff;
+	pExitRes->PktID = PKT_EXITROOMRES;
+	pExitRes->PktSize = sizeof(ST_EXIT_ROOM_RES);
+	OnSendPacket();
+
+	m_myRoom = nullptr;
+}
+
 //--------------------------------------------------------------------------------
 //
 void CUser::OnInitUserSocket()
@@ -184,19 +207,36 @@ void CUser::OnPacketProcess(void *pPacket)
         break;
 		case PKT_ENTERROOMREQ:
 		{
-			eEnterRoomResult result = m_myRoom->OnAddUser(m_iUserID, this);
+			ST_ENTER_ROOM_REQ *pEnterReq = (ST_ENTER_ROOM_REQ*)pPacket;
+
+			m_myRoom = g_pRoomMgr->GetRoomByNumber(pEnterReq->roomNum);
+			eEnterRoomResult result;
+			if (m_myRoom == nullptr)
+			{
+				result = EnterRoomFailByNoRoom;
+			}
+			else
+			{
+				result = m_myRoom->OnAddUser(m_iUserID, this);
+			}
 
 			ST_ENTER_ROOM_RES *pEnterRes = (ST_ENTER_ROOM_RES*)m_SendBuff;
 			pEnterRes->PktID = PKT_ENTERROOMRES;
 			pEnterRes->PktSize = sizeof(ST_ENTER_ROOM_RES);
-			pEnterRes->result = EnterRoomSuccess;
+			pEnterRes->result = result;
 			OnSendPacket();
 
 		}
 		break;
+		case PKT_EXITROOMREQ:
+		{
+			QuitRoom();
+		}
+		break;
 		case PKT_ROOMINFOREQ:
 		{
-			m_myRoom->OnSendInRoomInfo(this);
+			if(m_myRoom != nullptr)
+				m_myRoom->OnSendInRoomInfo(this);
 		}
 		break;
 	}

@@ -70,6 +70,7 @@ public:
     void SetUserStringID(std::string id);
 	
 	CRoom* GetRoom() { return m_myRoom; }
+	void QuitRoom();
 
 	void OnInitUserSocket();
 	void OnDisconnectSocket();

@@ -31,6 +31,9 @@ public:
 	
 	MAP_USER* GetMapUser() { return &m_mapUser; }
 	DWORD GetRoomNumber() { return m_iRoom; }
+	std::string GetRoomMasterName() { return m_strRoomMasterName; }
+
+	void QuitAllUser();
 
 	void SetTitle(char * title){ m_strRoomName = title; }
 	void SetMaxUser(unsigned char max){ m_maxUser = max; }

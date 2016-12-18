@@ -152,7 +152,7 @@ DWORD WINAPI WorkerThread(LPVOID arg)
 			{
 				err_display("WSAGetOverlappedResult()");
 			}
-
+			pUser->QuitRoom();
 			g_pUserMgr->OnDeleteUser(pUser->GetUserID(), pUser);
 			pUser->CloseUserSocket();
 			printf("[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트 번호=%d\n", 

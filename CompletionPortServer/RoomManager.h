@@ -44,6 +44,8 @@ public:
 	void OnDeleteRoom(DWORD Room_id, CRoom *pRoom);
 	void OnEraseRoom(DWORD Room_id);
 
+	CRoom* GetRoomByNumber(DWORD roomNum);
+
 	CRoom *GetListReadyRoom();
 
 	//---------------------------------- 패킷 처리 관련 ----------------------------//

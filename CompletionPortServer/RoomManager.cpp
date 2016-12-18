@@ -115,7 +115,6 @@ void CRoomManager::OnDeleteRoom(DWORD Room_id, CRoom *pRoom)
 	if (iterator_room != m_mapRoom.end())
 	{		 
 		m_mapRoom.erase(iterator_room);
-
 	}
 #ifdef _DEBUG
 	else
@@ -169,6 +168,24 @@ void CRoomManager::OnEraseRoom(DWORD Room_id)
 	}
 
 	UnLock();
+}
+
+CRoom* CRoomManager::GetRoomByNumber(DWORD roomNum)
+{
+	CRoom* pRoom = nullptr;
+	Lock();
+
+	MAP_ROOM::iterator  iterator_room;
+	iterator_room = m_mapRoom.find(roomNum);
+
+	if (iterator_room != m_mapRoom.end())
+	{
+		pRoom = iterator_room->second;
+	}
+
+	UnLock();
+
+	return pRoom;
 }
 
 

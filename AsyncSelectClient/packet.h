@@ -90,7 +90,9 @@ typedef struct _tgRoomInfoRes : PACKETHEADER
 enum eEnterRoomResult
 {
 	EnterRoomSuccess = 0,
-	EnterRoomFailWithFull = 1
+	EnterRoomFailByNoRoom = 1,
+	EnterRoomFailByFull = 2,
+	EnterRoomFailByExistUser = 3
 };
 
 #define PKT_ENTERROOMREQ		0x00220014
@@ -106,10 +108,15 @@ typedef struct _tgUserEnterRoomRes : PACKETHEADER
 } ST_ENTER_ROOM_RES;
 
 
-#define PKT_EXITROOM			0x00220016
-typedef struct _tgUserExitRoom : PACKETHEADER
+#define PKT_EXITROOMREQ			0x00220016
+typedef struct _tgUserExitRoomReq : PACKETHEADER
 {
-} ST_USEREXITROOM;
+} ST_EXIT_ROOM_REQ;
+
+#define PKT_EXITROOMRES			0x00220017
+typedef struct _tgUserExitRoomRes : PACKETHEADER
+{
+} ST_EXIT_ROOM_RES;
 
 #pragma pack(pop)
 
