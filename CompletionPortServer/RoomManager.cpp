@@ -39,7 +39,7 @@ CRoom *CRoomManager::GetListReadyRoom()
 {	
 	return m_queRoomContainer->pop();
 }
-CRoom *CRoomManager::CreateRoom(char *title)
+CRoom *CRoomManager::CreateRoom(char *title, char *masterName)
 {
 	CRoom *pRoom = GetListReadyRoom();
 
@@ -47,6 +47,7 @@ CRoom *CRoomManager::CreateRoom(char *title)
 	pRoom->SetMaxUser(2);
     pRoom->SetCurUser(0);
 	pRoom->SetRoomNumber(m_iRoomIndex);
+	pRoom->SetRoomMasterName(masterName);
 
     OnAddRoom(m_iRoomIndex, pRoom);
 	

@@ -26,21 +26,21 @@ CUser *CRoom::FindUser(DWORD user_id)
 
 	return NULL;
 }
-int CRoom::OnAddUser(DWORD user_id, CUser *pUser)		// 방에 유저 들어옴
+eEnterRoomResult CRoom::OnAddUser(DWORD user_id, CUser *pUser)		// 방에 유저 들어옴
 {
     if (m_curUser >= m_maxUser)
-        return 1;
+        return EnterRoomFailWithFull;
 
 	if (FindUser(user_id))
 	{
-		return 3;
+		return EnterRoomFailWithExistUser;
 	}
 
     m_curUser++;
 
 	m_mapUser.insert(std::make_pair(user_id, pUser));
 
-    return 0;
+    return EnterRoomSuccess;
 }
 void CRoom::OnDeleteAddUser(DWORD user_id, CUser *pUser)	// 유저 나감
 {
@@ -107,6 +107,7 @@ BOOL CRoom::OnSendInRoomInfo(CUser * pUser)
 	pRoomInfo->cur = m_curUser;
 	pRoomInfo->index = m_iRoom;
 	strcpy(pRoomInfo->title, m_strRoomName.c_str());
+	strcpy(pRoomInfo->masterName, m_strRoomMasterName.c_str());
 
 	m_WSABUF.len = pRoomInfo->PktSize;
 

@@ -38,7 +38,7 @@ public:
 	void InitRoomManager();
 	void ReleaseRoomManager();
 
-	CRoom *CreateRoom(char *title);
+	CRoom *CreateRoom(char *title, char* roomMasterName);
 					//클라이언트로 받는제묙!
 	void OnAddRoom(DWORD Room_id, CRoom *pRoom);
 	void OnDeleteRoom(DWORD Room_id, CRoom *pRoom);

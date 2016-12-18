@@ -154,31 +154,46 @@ void CUser::OnPacketProcess(void *pPacket)
 			pLoginResult->PktID = PKT_LOGINRESULT;
 			pLoginResult->PktSize = sizeof(ST_LOGIN_RESULT);
 			pLoginResult->result = result;
-            
 
 			OnSendPacket();
 		}	
 		break;
         case PKT_LOBBYINFOREQ:
         {
-            g_pUserMgr->OnSendLobbyUserInfoToMe(this);
 			g_pUserMgr->OnSendLobbyRoomInfoToMe(this);
-        }
+			ST_LOBBY_END_OF_ROOM_INFO* pEndOfUserInfo = (ST_LOBBY_END_OF_ROOM_INFO*)m_SendBuff;
+			pEndOfUserInfo->PktID = PKT_LOBBYENDOFROOMINFO;
+			pEndOfUserInfo->PktSize = sizeof(ST_LOBBY_END_OF_ROOM_INFO);
+			OnSendPacket();
+			g_pUserMgr->OnSendLobbyUserInfoToMe(this);
+		}
         break;
-        case PKT_CREATEROOM:
+        case PKT_CREATEROOMREQ:
         {
-            ST_ROOM_CREATE *pRoomInof = (ST_ROOM_CREATE *)pPacket;
+            ST_ROOM_CREATE_REQ *pRoomReq = (ST_ROOM_CREATE_REQ *)pPacket;
             
-            m_myRoom = g_pRoomMgr->CreateRoom(pRoomInof->title);
-            int ret = m_myRoom->OnAddUser(m_iUserID, this);
-            if (ret != 0)
-            {
-                return;
-            }
+            m_myRoom = g_pRoomMgr->CreateRoom(pRoomReq->title, m_strUserID);
 
-            m_myRoom->OnSendAllUserRoomInfo();
+			ST_ROOM_CREATE_RES *pRoomRes = (ST_ROOM_CREATE_RES*)m_SendBuff;
+			pRoomRes->PktID = PKT_CREATEROOMRES;
+			pRoomRes->PktSize = sizeof(ST_ROOM_CREATE_RES);
+			pRoomRes->roomNum = m_myRoom->GetRoomNumber();
+			OnSendPacket();
+            //m_myRoom->OnSendAllUserRoomInfo();
         }
         break;
+		case PKT_ENTERROOMREQ:
+		{
+			eEnterRoomResult result = m_myRoom->OnAddUser(m_iUserID, this);
+
+			ST_ENTER_ROOM_RES *pEnterRes = (ST_ENTER_ROOM_RES*)m_SendBuff;
+			pEnterRes->PktID = PKT_ENTERROOMRES;
+			pEnterRes->PktSize = sizeof(ST_ENTER_ROOM_RES);
+			pEnterRes->result = EnterRoomSuccess;
+			OnSendPacket();
+
+		}
+		break;
 		case PKT_ROOMINFOREQ:
 		{
 			m_myRoom->OnSendInRoomInfo(this);

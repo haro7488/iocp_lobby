@@ -28,6 +28,7 @@ enum eGameState
 	stateLogin,
 	stateLoginWait,
 	stateLobby,
+	stateWaitCreateRoom,
 	stateWaitEnterRoom,
 	stateWaitExitRoom,
 	stateRoom,
@@ -83,7 +84,7 @@ DWORD WINAPI Terminal(LPVOID arg)
 		{
 			printf(" - 로비 - \n");
 			printf("ME : %s\n\n", g_User.name.c_str());
-			printf("대기자 / 방 목록 = \n");
+			printf("방목록 = \n");
 			ST_LOBBYINFOREQ  lobbyReq;
 			lobbyReq.PktID = PKT_LOBBYINFOREQ;
 			lobbyReq.PktSize = sizeof(ST_LOBBYINFOREQ);
@@ -91,11 +92,21 @@ DWORD WINAPI Terminal(LPVOID arg)
 			Sleep(500);
 		}
 		break;
+		case stateWaitCreateRoom:
+		{
+			continue;
+		}
+		break;
+		case stateWaitEnterRoom:
+		{
+			continue;
+		}
+		break;
 		case stateRoom:
 		{
 			printf(" - 룸 - \n");
 			printf("ME : %s\n\n", g_User.name.c_str());
-			printf("방정보 = \n");
+			printf("대기자 = \n");
 			ST_ROOMINFOREQ roomReq;
 			roomReq.PktID = PKT_ROOMINFOREQ;
 			roomReq.PktSize = sizeof(ST_ROOMINFOREQ);
@@ -139,24 +150,33 @@ DWORD WINAPI Terminal(LPVOID arg)
 				if (gameState != stateLobby)
 					break;
 		
-                printf("room name : ");
+                printf("만들 방 이름 : ");
 
-                ST_ROOM_CREATE room;
-                room.PktID = PKT_CREATEROOM;
-                room.PktSize = sizeof(ST_ROOM_CREATE);
+                ST_ROOM_CREATE_REQ room;
+                room.PktID = PKT_CREATEROOMREQ;
+                room.PktSize = sizeof(ST_ROOM_CREATE_REQ);
                 scanf("%s", room.title);
 
                 send(g_sock, (char *)&room, room.PktSize, 0);
-				gameState = stateWaitEnterRoom;
+				gameState = stateWaitCreateRoom;
             }
             break;
 			case 2: // Enter Room
 			{
 				if (gameState != stateLobby)
 					break;
+				
+				ST_ENTER_ROOM_REQ room;
+				room.PktID = PKT_ENTERROOMREQ;
+				room.PktSize = sizeof(ST_ENTER_ROOM_REQ);
+				printf("들어갈 방 번호 : ");
+				scanf("%d", room.roomNum);
+
+				send(g_sock, (char *)&room, room.PktSize, 0);
 
 				gameState = stateWaitEnterRoom;
 			}
+
 			break;
 			case 3: // Exit Room
 			{
@@ -358,15 +378,68 @@ void PacketProcess(PACKETHEADER *pHeader, HWND hWnd)
 		break;
         case PKT_LOBBYINFORES:
         {
-           ST_LOBBYINFORES *pName = (ST_LOBBYINFORES *)pHeader;
-           printf("USER : %s\n", pName->name);
-        }
-         break;
+			if (gameState == stateWaitExitRoom)
+				gameState = stateLobby;
+
+			ST_LOBBYINFORES *pName = (ST_LOBBYINFORES *)pHeader;
+			printf("USER : %s\n", pName->name);
+		}
+		break;
+		case PKT_LOBBYENDOFROOMINFO:
+		{
+			printf("\n대기자 = \n");
+		}
+		break;
+		case PKT_CREATEROOMRES:
+		{
+			if (gameState == stateWaitCreateRoom)
+			{
+				ST_ROOM_CREATE_RES* pRoomCreateRes = (ST_ROOM_CREATE_RES*)pHeader;
+
+				ST_ENTER_ROOM_REQ enterRoomReq;
+				enterRoomReq.PktID = PKT_ENTERROOMREQ;
+				enterRoomReq.PktSize = sizeof(ST_ENTER_ROOM_REQ);
+				enterRoomReq.roomNum = pRoomCreateRes->roomNum;
+				send(g_sock, (char *)&enterRoomReq, enterRoomReq.PktSize, 0);
+				gameState = stateWaitEnterRoom;
+			}
+		}
+		break;
+		case PKT_ENTERROOMRES:
+		{
+			if (gameState == stateWaitEnterRoom)
+			{
+				ST_ENTER_ROOM_RES *pRoomResult = (ST_ENTER_ROOM_RES*)pHeader;
+				switch (pRoomResult->result)
+				{
+				case EnterRoomSuccess:
+				{
+					printf("방 참가 성공\n");
+					EnterIsContinue();
+					gameState = stateRoom;
+				}
+				break;
+				case EnterRoomFailWithFull:
+				{
+					printf("방 참가 실패 - 방이 꽉 차서 들어갈 수 없습니다.\n");
+					EnterIsContinue();
+					gameState = stateLobby;
+				}
+				break;
+				default:
+					break;
+				}
+			}
+		}
+		break;
         case PKT_ROOMINFORES:
         {
-           ST_ROOM_INFORES *pRoomInfo = (ST_ROOM_INFORES *)pHeader;
-           printf("room : %d, %d/%d, title : %s\n", 
-               pRoomInfo->index, pRoomInfo->cur, pRoomInfo->max, pRoomInfo->title);
+			if (gameState == stateWaitEnterRoom)
+				gameState = stateRoom;
+			ST_ROOM_INFORES *pRoomInfo = (ST_ROOM_INFORES *)pHeader;
+			printf("room : %d / [%d/%d] / title : %s / master : %s \n", 
+			pRoomInfo->index, pRoomInfo->cur, pRoomInfo->max, pRoomInfo->title, pRoomInfo->masterName);
+
         }
         break;
 	}
