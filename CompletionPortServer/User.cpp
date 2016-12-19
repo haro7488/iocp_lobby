@@ -373,7 +373,7 @@ BOOL CUser::OnSendGamePlayMove(POSITIONINFO* posInfo)
 {
 	POSITIONINFO* pMove = (POSITIONINFO*)m_SendBuff;
 	pMove->PktID = PKT_MOVE;
-	pMove->PktSize = sizeof(pMove);
+	pMove->PktSize = sizeof(POSITIONINFO);
 	pMove->x = posInfo->x;
 	pMove->y = posInfo->y;
 	OnSendPacket();
@@ -384,7 +384,7 @@ BOOL CUser::OnSendGamePlayShoot(POSITIONINFO* posInfo)
 {
 	POSITIONINFO* pShot = (POSITIONINFO*)m_SendBuff;
 	pShot->PktID = PKT_SHOOT;
-	pShot->PktSize = sizeof(pShot);
+	pShot->PktSize = sizeof(POSITIONINFO);
 	pShot->x = posInfo->x;
 	pShot->y = posInfo->y;
 	OnSendPacket();
@@ -395,7 +395,7 @@ BOOL CUser::OnSendGamePlayBoom(POSITIONINFO* posInfo)
 {
 	POSITIONINFO* pBoom = (POSITIONINFO*)m_SendBuff;
 	pBoom->PktID = PKT_BOOM;
-	pBoom->PktSize = sizeof(pBoom);
+	pBoom->PktSize = sizeof(POSITIONINFO);
 	pBoom->x = posInfo->x;
 	pBoom->y = posInfo->y;
 	OnSendPacket();
@@ -406,13 +406,17 @@ BOOL CUser::OnSendGamePlayEnemySuperGuard()
 {
 	PACKETHEADER* pSuperGuard = (PACKETHEADER*)m_SendBuff;
 	pSuperGuard->PktID = PKT_ENEMYSUPERGUARD;
-	pSuperGuard->PktSize = sizeof(pSuperGuard);
+	pSuperGuard->PktSize = sizeof(PACKETHEADER);
 	OnSendPacket();
 	return TRUE;
 }
 
 BOOL CUser::OnSendGamePlayRestart()
 {
+	PACKETHEADER* pRestart = (PACKETHEADER*)m_SendBuff;
+	pRestart->PktID = PKT_RESTART;
+	pRestart->PktSize = sizeof(PACKETHEADER);
+	OnSendPacket();
 	return TRUE;
 }
 
